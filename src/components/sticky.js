@@ -2,7 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 
 const getOffset = (element) => {
-  if (!element.getClientRects().length) { return { top: 0, left: 0 }}
+  if (!element.getClientRects().length) {return {top: 0, left: 0}}
   const rect = element.getBoundingClientRect();
   const win = element.ownerDocument.defaultView;
   return {
@@ -67,6 +67,11 @@ class Sticky extends React.Component {
     e.preventDefault()
   }
 
+  handleClose = (e) => {
+    this.props.handleClose(this.props.id)
+    e.preventDefault()
+  }
+
   render = () => {
     return (
       <div
@@ -80,6 +85,16 @@ class Sticky extends React.Component {
           top: this.state.pos.y + 'px',
         }}
       >
+        <span style={{float: 'right'}}>
+          <button
+            type="button"
+            className="close"
+            onClick={this.handleClose}
+            aria-label="Close"
+          >
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </span>
         {this.props.children}
       </div>
     )

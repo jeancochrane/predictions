@@ -1,6 +1,6 @@
 module.exports = {
   siteMetadata: {
-    title: `Predictions`,
+    title: `2021 Predictions`,
     description: `P2P web app for making New Year's predictions with friends.`,
     author: `Jean Cochrane`,
     url: ``,
