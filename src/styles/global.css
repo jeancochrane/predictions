@@ -1,3 +1,12 @@
 body {
   background-color: #fcf8f9;
 }
+
+.sticky {
+  cursor: pointer;
+  width: 200px;
+  height: 200px;
+  background-color: #cca;
+  border: '2px solid #aa5';
+  padding: 10px;
+}
