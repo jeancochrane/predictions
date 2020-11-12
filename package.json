@@ -1,37 +1,18 @@
 {
   "name": "predictions",
-  "private": true,
-  "description": "P2P web app for making New Year's predictions with friends",
-  "version": "0.1.0",
-  "author": "Jean Cochrane",
+  "version": "0.0.0",
+  "description": "JavaScript development setup for predictions",
   "dependencies": {
-    "eslint-config-react-app": "^5.2.1",
-    "gatsby": "^2.19.45",
-    "gatsby-image": "^2.2.44",
-    "gatsby-plugin-manifest": "^2.2.48",
-    "gatsby-plugin-offline": "^3.0.41",
-    "gatsby-plugin-react-helmet": "^3.1.24",
-    "gatsby-plugin-sharp": "^2.4.13",
-    "gatsby-source-filesystem": "^2.4.2",
-    "gatsby-transformer-sharp": "^2.3.19",
+    "@babel/cli": "^7.8.4",
+    "@babel/core": "^7.9.6",
+    "@babel/preset-env": "^7.9.6",
+    "@babel/preset-react": "^7.9.4",
+    "babel-preset-env": "^1.7.0",
+    "babelify": "^10.0.0",
+    "browserify": "^16.5.0",
     "prop-types": "^15.7.2",
-    "react": "^16.12.0",
-    "react-dom": "^16.12.0",
-    "react-helmet": "^5.2.1"
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1"
   },
-  "license": "MIT",
-  "scripts": {
-    "build": "gatsby build",
-    "develop": "gatsby develop -H 0.0.0.0 -p 8000",
-    "serve": "gatsby serve",
-    "clean": "gatsby clean",
-    "test": "eslint ."
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/jeancochrane/predictions"
-  },
-  "bugs": {
-    "url": "https://github.com/jeancochrane/predictions/issues"
-  }
+  "devDependencies": {}
 }

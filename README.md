@@ -1,25 +1,31 @@
 # Predictions
 
-P2P web app for making New Year's predictions with friends.
+Web game for making New Year's predictions with friends.
 
-### 💾 Requirements
+## Developing
 
-- [Docker](https://docs.docker.com/install/)
-- [Docker Compose](https://docs.docker.com/compose/install/)
+Development requires a local installation of [Docker](https://docs.docker.com/install/)
+and [Docker Compose](https://docs.docker.com/compose/install/).
 
-### 🚀 Quick start
+Build application containers:
 
-1. Grab the repo:
-
-```shell
-git clone git@github.com:jeancochrane/predictions.git
-cd predictions
+```
+docker-compose build
 ```
 
-2. Start developing
+Run the app:
 
-```shell
-docker-compose up --build
+```
+docker-compose up
 ```
 
-Your site should now be up and running at `http://localhost:8000`!
+The app will be available at http://localhost:8000. The database will be exposed
+on port 32001.
+
+### Running tests
+
+Run tests with Docker Compose:
+
+```
+docker-compose -f docker-compose.yml -f tests/docker-compose.yml run --rm app
+```

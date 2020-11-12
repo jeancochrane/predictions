@@ -1,7 +1,7 @@
 import React from "react"
+import ReactDOM from "react-dom"
 
 import Layout from "../components/layout"
-import SEO from "../components/seo"
 import Sticky from '../components/sticky'
 
 
@@ -46,7 +46,6 @@ class IndexPage extends React.Component {
   render () {
     return (
       <Layout>
-        <SEO title="Home" />
         <form onSubmit={this.handleSubmit}>
           <label htmlFor="sticky-text">Add a new prediction:</label>
           <br />
@@ -71,4 +70,7 @@ class IndexPage extends React.Component {
   }
 }
 
-export default IndexPage
+ReactDOM.render(
+  React.createElement(IndexPage, window.props),
+  window.reactMount
+)
