@@ -16,6 +16,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_started
     volumes:
       # Mount the development directory as a volume into the container, so
       # Docker automatically recognizes your changes.
@@ -52,6 +54,12 @@ services:
       - predictions-db-data:/var/lib/postgresql/data
     ports:
       - 32001:5432
+
+  redis:
+    container_name: predictions-redis
+    image: redis:latest
+    ports:
+      - 6379:6379
 
 volumes:
   # Declare your named volume for Postgres.

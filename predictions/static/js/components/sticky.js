@@ -85,6 +85,7 @@ class Sticky extends React.Component {
           top: this.state.pos.y + 'px',
         }}
       >
+        {/* TODO: only show close button for the user's stickies */}
         <span style={{float: 'right'}}>
           <button
             type="button"
