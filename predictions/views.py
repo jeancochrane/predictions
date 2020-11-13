@@ -1,5 +1,8 @@
 from django.shortcuts import render
 from django.views.generic import TemplateView
+from django.urls import reverse
+
+from predictions import models
 
 
 class Home(TemplateView):
@@ -7,7 +10,12 @@ class Home(TemplateView):
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
-        context['props'] = {}  # Set React props
+        predictions = models.Prediction.objects.all()
+        context['props'] = {
+            'predictions': [prediction.as_dict() for prediction in predictions],
+            'username': self.request.user.username,
+            'loginUrl': f'{reverse("admin:login")}?next={reverse("home")}'
+        }
         return context
 
 

@@ -85,17 +85,18 @@ class Sticky extends React.Component {
           top: this.state.pos.y + 'px',
         }}
       >
-        {/* TODO: only show close button for the user's stickies */}
-        <span style={{float: 'right'}}>
-          <button
-            type="button"
-            className="close"
-            onClick={this.handleClose}
-            aria-label="Close"
-          >
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </span>
+        {this.props.showCloseButton &&
+          <span style={{float: 'right'}}>
+            <button
+              type="button"
+              className="close"
+              onClick={this.handleClose}
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </span>
+        }
         {this.props.children}
       </div>
     )
