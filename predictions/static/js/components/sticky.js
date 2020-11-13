@@ -35,8 +35,8 @@ class Sticky extends React.Component {
     }
   }
 
-  // calculate relative position to the mouse and set dragging=true
   onMouseDown = (e) => {
+    // Calculate relative position to the mouse and set dragging=true
     const pos = getOffset(ReactDOM.findDOMNode(this))
     this.setState({
       dragging: true,
@@ -51,6 +51,8 @@ class Sticky extends React.Component {
 
   onMouseUp = (e) => {
     this.setState({dragging: false})
+    // Send position update message
+    this.props.handleMovePrediction(this.props.id, this.state.pos)
     e.stopPropagation()
     e.preventDefault()
   }

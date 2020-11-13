@@ -24,7 +24,10 @@ class IndexPage extends React.Component {
       const data = JSON.parse(message.data)
       switch (data.type) {
         case 'create':
-          this.addPrediction(data.id, data.text, data.username)
+          this.addPrediction(data.id, data.text, data.username, data.positionX, data.positionY)
+          break
+        case 'update':
+          this.updatePrediction(data.id, data.positionX, data.positionY)
           break
         case 'delete':
           this.removePrediction(data.id)
@@ -38,11 +41,29 @@ class IndexPage extends React.Component {
     }
   }
 
-  addPrediction = (id, text, username) => {
+  addPrediction = (id, text, username, positionX, positionY) => {
     this.setState(state => {
       return {
         ...state,
-        predictions: state.predictions.concat({id, text, username})
+        predictions: state.predictions.concat(
+          {id, text, username, positionX, positionY}
+        )
+      }
+    })
+  }
+
+  updatePrediction = (id, positionX, positionY) => {
+    this.setState(state => {
+      let predictions = [...state.predictions]
+      for (let prediction of predictions) {
+        if (prediction.id === id) {
+          prediction.positionX = positionX
+          prediction.positionY = positionY
+        }
+      }
+      return {
+        ...state,
+        predictions
       }
     })
   }
@@ -73,6 +94,16 @@ class IndexPage extends React.Component {
     this.client.send(JSON.stringify({type: 'delete', id: predictionId}))
   }
 
+  handleMovePrediction = (predictionId, position) => {
+    // Send a message to the socket to update the prediction position
+    this.client.send(JSON.stringify({
+      type: 'update',
+      id: predictionId,
+      positionX: position.x,
+      positionY: position.y
+    }))
+  }
+
   render () {
     return (
       <Layout>
@@ -96,6 +127,8 @@ class IndexPage extends React.Component {
             id={prediction.id}
             handleClose={this.handleClose}
             showCloseButton={this.props.username === prediction.username}
+            initialPos={{x: prediction.positionX, y: prediction.positionY}}
+            handleMovePrediction={this.handleMovePrediction}
           >
             {prediction.username}: {prediction.text}
           </Sticky>
