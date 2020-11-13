@@ -87,7 +87,7 @@ class Sticky extends React.Component {
           top: this.state.pos.y + 'px',
         }}
       >
-        {this.props.showCloseButton &&
+        {this.props.editable &&
           <span style={{float: 'right'}}>
             <button
               type="button"

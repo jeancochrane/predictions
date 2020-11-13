@@ -126,7 +126,7 @@ class IndexPage extends React.Component {
             key={prediction.id}
             id={prediction.id}
             handleClose={this.handleClose}
-            showCloseButton={this.props.username === prediction.username}
+            editable={this.props.username === prediction.username}
             initialPos={{x: prediction.positionX, y: prediction.positionY}}
             handleMovePrediction={this.handleMovePrediction}
           >
