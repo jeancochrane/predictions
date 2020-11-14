@@ -1,0 +1,24 @@
+{% extends "predictions/base.html" %}
+{% load static compress %}
+
+{% block title %}Home{% endblock %}
+
+{% block body %}
+  <div id="App">
+    <div class="text-center">
+      <i class="fas fa-lg fa-spinner fa-spin"></i><br><br>
+      <i class="pending">Loading components...</i><br><br>
+    </div>
+  </div>
+{% endblock %}
+
+{% block extra_js %}
+  {{ props|json_script:"props" }}
+  <script type="text/javascript">
+    window.props = JSON.parse(document.getElementById('props').textContent)
+    window.reactMount = document.getElementById('App')
+  </script>
+  {% compress js %}
+    <script type="text/jsx" src="{% static 'js/pages/index.js' %}"></script>
+  {% endcompress %}
+{% endblock %}

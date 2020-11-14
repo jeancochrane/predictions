@@ -1,0 +1,25 @@
+{
+  "name": "predictions",
+  "scripts": {},
+  "env": {
+    "DJANGO_ALLOWED_HOSTS": {
+      "required": true
+    },
+    "DJANGO_SECRET_KEY": {
+      "required": true
+    }
+  },
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "free"
+    }
+  },
+  "environments": {
+    "review": {
+      "addons": ["heroku-postgresql:hobby-basic", "heroku-redis:hobby-dev"]
+    }
+  },
+  "buildpacks": [],
+  "stack": "container"
+}

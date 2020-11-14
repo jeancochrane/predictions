@@ -1,0 +1,13 @@
+setup:
+  addons:
+    - plan: heroku-postgresql
+    - plan: heroku-redis
+build:
+  docker:
+    web: Dockerfile
+release:
+  command:
+    - ./scripts/release.sh
+  image: web
+run:
+  web: daphne -t 180 -b 0.0.0.0 -p $PORT --verbosity 2 predictions.asgi:application
