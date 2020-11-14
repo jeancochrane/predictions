@@ -10,4 +10,4 @@ release:
     - ./scripts/release.sh
   image: web
 run:
-  web: daphne -t 180 -p $PORT --verbosity 2 predictions.asgi:application
+  web: daphne -t 180 -b 0.0.0.0 -p $PORT --verbosity 2 predictions.asgi:application
