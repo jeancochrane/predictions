@@ -51,7 +51,7 @@ class Sticky extends React.Component {
   onMouseUp = (e) => {
     this.setState({dragging: false})
     // Send position update message
-    this.props.handleMouseUp(this.props.id, this.state.pos)
+    this.props.handleMouseUp(this.props.id, this.props.position)
     e.stopPropagation()
     e.preventDefault()
   }
