@@ -94,7 +94,7 @@ class IndexPage extends React.Component {
     this.client.send(JSON.stringify({type: 'delete', id: predictionId}))
   }
 
-  handleMovePrediction = (predictionId, position) => {
+  handleMouseUp = (predictionId, position) => {
     // Send a message to the socket to update the prediction position
     this.client.send(JSON.stringify({
       type: 'update',
@@ -102,6 +102,11 @@ class IndexPage extends React.Component {
       positionX: position.x,
       positionY: position.y
     }))
+  }
+
+  handleMouseMove = (predictionId, position) => {
+    // Reset the position, but don't send the new position to the server
+    this.updatePrediction(predictionId, position.x, position.y)
   }
 
   render () {
@@ -126,9 +131,10 @@ class IndexPage extends React.Component {
             key={prediction.id}
             id={prediction.id}
             handleClose={this.handleClose}
+            handleMouseMove={this.handleMouseMove}
+            handleMouseUp={this.handleMouseUp}
             editable={this.props.username === prediction.username}
-            initialPos={{x: prediction.positionX, y: prediction.positionY}}
-            handleMovePrediction={this.handleMovePrediction}
+            position={{x: prediction.positionX, y: prediction.positionY}}
           >
             {prediction.username}: {prediction.text}
           </Sticky>

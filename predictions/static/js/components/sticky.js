@@ -15,7 +15,6 @@ class Sticky extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      pos: props.initialPos ? props.initialPos : {x: 0, y: 0},
       dragging: false,
       rel: null // position relative to the cursor
     }
@@ -52,18 +51,16 @@ class Sticky extends React.Component {
   onMouseUp = (e) => {
     this.setState({dragging: false})
     // Send position update message
-    this.props.handleMovePrediction(this.props.id, this.state.pos)
+    this.props.handleMouseUp(this.props.id, this.state.pos)
     e.stopPropagation()
     e.preventDefault()
   }
 
   onMouseMove = (e) => {
     if (!this.state.dragging) return
-    this.setState({
-      pos: {
-        x: e.pageX - this.state.rel.x,
-        y: e.pageY - this.state.rel.y
-      }
+    this.props.handleMouseMove(this.props.id, {
+      x: e.pageX - this.state.rel.x,
+      y: e.pageY - this.state.rel.y
     })
     e.stopPropagation()
     e.preventDefault()
@@ -83,8 +80,8 @@ class Sticky extends React.Component {
         onMouseMove={this.onMouseMove}
         style={{
           position: 'absolute',
-          left: this.state.pos.x + 'px',
-          top: this.state.pos.y + 'px',
+          left: this.props.position.x + 'px',
+          top: this.props.position.y + 'px',
         }}
       >
         {this.props.editable &&
