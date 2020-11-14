@@ -23,9 +23,11 @@ RUN npm install
 # the container.
 COPY . /app
 
-# Add a bogus env var for the Django secret key in order to allow us to run
-# the 'collectstatic' management command
+# Add a bogus env var for the Django secret key and debug in order to allow us to run
+# the 'collectstatic' and 'compress' management commands
 ENV DJANGO_SECRET_KEY 'foobar'
+ENV DJANGO_DEBUG 'False'
 
 # Build static files into the container
 RUN python manage.py collectstatic --noinput
+RUN python manage.py compress
