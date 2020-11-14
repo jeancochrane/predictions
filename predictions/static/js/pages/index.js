@@ -9,7 +9,7 @@ class IndexPage extends React.Component {
   constructor(props) {
     super(props)
     // TODO: Only open a connection if the user is staff and env variable is set
-    this.client = new WebSocket(`ws://${window.location.host}/ws/predictions/2020/`)
+    this.client = new WebSocket(`wss://${window.location.host}/ws/predictions/2020/`)
     this.state = {
       currText: '',  // Current prediction text (controlled by the form input)
       predictions: props.predictions ? props.predictions : [],  // List of prediction objects
