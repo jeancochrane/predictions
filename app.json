@@ -17,7 +17,7 @@
   },
   "environments": {
     "review": {
-      "addons": ["heroku-postgresql:hobby-basic"]
+      "addons": ["heroku-postgresql:hobby-basic", "heroku-redis:hobby-dev"]
     }
   },
   "buildpacks": [],

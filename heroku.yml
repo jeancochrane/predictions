@@ -1,6 +1,7 @@
 setup:
   addons:
     - plan: heroku-postgresql
+    - plan: heroku-redis
 build:
   docker:
     web: Dockerfile
@@ -9,4 +10,4 @@ release:
     - ./scripts/release.sh
   image: web
 run:
-  web: gunicorn -t 180 -w 3 --log-level debug predictions.wsgi:application
+  web: daphne -t 180 --verbosity 2 predictions.asgi:application
