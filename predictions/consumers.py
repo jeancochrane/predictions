@@ -2,7 +2,6 @@ import json
 
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer
-from django.core.exceptions import PermissionDenied
 
 from predictions import models
 
@@ -45,7 +44,7 @@ class PredictionConsumer(WebsocketConsumer):
         elif message_type == 'delete':
             self.delete_prediction(text_data_json)
         else:
-            raise ValueError(
+            self.send_error(
                 f'Message type not recognized: {message_type}'
             )
 
@@ -56,7 +55,7 @@ class PredictionConsumer(WebsocketConsumer):
         """
         text = text_data_json.get('text')
         if not text:
-            raise ValueError('text is required when creating predictions')
+            self.send_error('text is required when creating predictions')
 
         prediction = models.Prediction.objects.create(user=self.user, text=text)
         async_to_sync(self.channel_layer.group_send)(
@@ -78,33 +77,29 @@ class PredictionConsumer(WebsocketConsumer):
         """
         prediction_id = text_data_json.get('id')
         if not prediction_id:
-            raise ValueError('id is required when updating predictions')
+            self.send_error('id is required when updating predictions')
 
         position_x = text_data_json.get('positionX')
         position_y = text_data_json.get('positionY')
         if not position_x and position_y:
-            raise ValueError(
+            self.send_error(
                 'positionX and positionY are required when updating predictions'
             )
 
         prediction = models.Prediction.objects.get(id=prediction_id)
-        if prediction.user != self.user:
-            raise PermissionDenied(
-                'You must be the creator of a prediction to update it'
-            )
-        else:
-            prediction.position_x = position_x
-            prediction.position_y = position_y
-            prediction.save()
-            async_to_sync(self.channel_layer.group_send)(
-                self.year_group_name,
-                {
-                    'type': 'send_update_message',
-                    'id': prediction_id,
-                    'position_x': position_x,
-                    'position_y': position_y
-                }
-            )
+        prediction.position_x = position_x
+        prediction.position_y = position_y
+        prediction.save()
+
+        async_to_sync(self.channel_layer.group_send)(
+            self.year_group_name,
+            {
+                'type': 'send_update_message',
+                'id': prediction_id,
+                'position_x': position_x,
+                'position_y': position_y
+            }
+        )
 
     def delete_prediction(self, text_data_json):
         """
@@ -113,11 +108,11 @@ class PredictionConsumer(WebsocketConsumer):
         """
         prediction_id = text_data_json.get('id')
         if not prediction_id:
-            raise ValueError('id is required when deleting predictions')
+            self.send_error('id is required when deleting predictions')
 
         prediction = models.Prediction.objects.get(id=prediction_id)
         if prediction.user != self.user:
-            raise PermissionDenied(
+            self.send_error(
                 'You must be the creator of a prediction to delete it'
             )
         else:
@@ -161,4 +156,13 @@ class PredictionConsumer(WebsocketConsumer):
         self.send(text_data=json.dumps({
             'type': 'delete',
             'id': event['id']
+        }))
+
+    def send_error(self, message):
+        """
+        Send an error message to a single connection.
+        """
+        self.send(text_data=json.dumps({
+            'type': 'error',
+            'text': message
         }))
