@@ -11,7 +11,7 @@ class PredictionConsumer(WebsocketConsumer):
 
     def connect(self):
         self.user = self.scope['user']
-        if self.user.is_staff and settings.PREDICTIONS_ACTIVE:
+        if models.user_can_manage_predictions(self.user) and settings.PREDICTIONS_ACTIVE:
             self.is_connected = True
             self.year = self.scope['url_route']['kwargs']['year']
             self.year_group_name = f'predictions_{self.year}'

@@ -31,3 +31,11 @@ class Prediction(models.Model):
             'positionX': self.position_x,
             'positionY': self.position_y
         }
+
+
+def user_can_manage_predictions(user):
+    """Check if a User can manage the Prediction model."""
+    return user.has_perms([
+        f'predictions.{verb}_prediction' for verb in
+        ['add', 'change', 'delete', 'view']
+    ])

@@ -17,7 +17,9 @@ class Home(TemplateView):
             'username': self.request.user.username,
             'loginUrl': f'{reverse("admin:login")}?next={reverse("home")}',
             'isActive': settings.PREDICTIONS_ACTIVE,
-            'userHasPermissions': self.request.user.is_staff
+            'userHasPermissions': models.user_can_manage_predictions(
+                self.request.user
+            )
         }
         return context
 
