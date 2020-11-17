@@ -2,21 +2,16 @@ import json
 
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer
+from django.conf import settings
 
 from predictions import models
 
 
 class PredictionConsumer(WebsocketConsumer):
-    # TODO: Convert this consumer to async
 
     def connect(self):
         self.user = self.scope['user']
-        # TODO: More advanced permissions
-        # TODO: Only open the connection if env var is set
-        if not self.user.is_staff:
-            self.is_connected = False
-            self.close()
-        else:
+        if self.user.is_staff and settings.PREDICTIONS_ACTIVE:
             self.is_connected = True
             self.year = self.scope['url_route']['kwargs']['year']
             self.year_group_name = f'predictions_{self.year}'
@@ -26,6 +21,9 @@ class PredictionConsumer(WebsocketConsumer):
                 self.channel_name
             )
             self.accept()
+        else:
+            self.is_connected = False
+            self.close()
 
     def disconnect(self, close_code):
         if self.is_connected:

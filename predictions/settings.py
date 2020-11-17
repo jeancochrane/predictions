@@ -176,3 +176,6 @@ CHANNEL_LAYERS = {
         }
     }
 }
+
+# Whether or not the game is active
+PREDICTIONS_ACTIVE = False if os.getenv('PREDICTIONS_ACTIVE', True) == 'False' else True

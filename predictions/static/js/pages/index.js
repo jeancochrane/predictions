@@ -8,41 +8,56 @@ import Sticky from '../components/sticky'
 class IndexPage extends React.Component {
   constructor(props) {
     super(props)
-    // TODO: Only open a connection if the user is staff and env variable is set
-    this.client = new WebSocket(
-      `${window.location.protocol === 'https' ? 'wss' : 'ws'}://${window.location.host}/ws/predictions/2020/`
-    )
+    // Only open a websocket connection if the user has permissions and the env
+    // variable for activating the game is set
+    if (this.isActive() && this.userHasPermissions()) {
+      this.client = new WebSocket(
+        `${window.location.protocol === 'https' ? 'wss' : 'ws'}://${window.location.host}/ws/predictions/2020/`
+      )
+    }
     this.state = {
       currText: '',  // Current prediction text (controlled by the form input)
       predictions: props.predictions ? props.predictions : [],  // List of prediction objects
     }
   }
 
+  isActive = () => {
+    // Whether or not the predictions game is active
+    return (this.props.isActive ? true : false)
+  }
+
+  userHasPermissions = () => {
+    // Whether or not the current user has permissions to had predictions
+    return (this.props.userHasPermissions ? true : false)
+  }
+
   componentDidMount = () => {
-    this.client.onopen = () => {
-      console.log('Websocket client connected')
-    }
-    this.client.onmessage = (message) => {
-      const data = JSON.parse(message.data)
-      switch (data.type) {
-        case 'create':
-          this.addPrediction(data.id, data.text, data.username, data.positionX, data.positionY)
-          break
-        case 'update':
-          this.updatePrediction(data.id, data.positionX, data.positionY)
-          break
-        case 'delete':
-          this.removePrediction(data.id)
-          break
-        case 'error':
-          alert(data.text)
-          break
-        default:
-          console.log(`Unrecognized message type: ${data.type}`)
+    if (this.isActive() && this.userHasPermissions()) {
+      this.client.onopen = () => {
+        console.log('Websocket client connected')
       }
-    }
-    this.client.onclose = () => {
-      console.error('Websocket closed unexpectedly')
+      this.client.onmessage = (message) => {
+        const data = JSON.parse(message.data)
+        switch (data.type) {
+          case 'create':
+            this.addPrediction(data.id, data.text, data.username, data.positionX, data.positionY)
+            break
+          case 'update':
+            this.updatePrediction(data.id, data.positionX, data.positionY)
+            break
+          case 'delete':
+            this.removePrediction(data.id)
+            break
+          case 'error':
+            alert(data.text)
+            break
+          default:
+            console.log(`Unrecognized message type: ${data.type}`)
+        }
+      }
+      this.client.onclose = () => {
+        console.error('Websocket closed unexpectedly')
+      }
     }
   }
 
@@ -89,24 +104,30 @@ class IndexPage extends React.Component {
   handleSubmit = (e) => {
     // Send a message to the socket to create a new prediction
     e.preventDefault()
-    this.client.send(JSON.stringify({type: 'create', text: this.state.currText}))
-    // Clear the textarea
-    this.setState({currText: ''})
+    if (this.isActive() && this.userHasPermissions()) {
+      this.client.send(JSON.stringify({type: 'create', text: this.state.currText}))
+      // Clear the textarea
+      this.setState({currText: ''})
+    }
   }
 
   handleClose = (predictionId) => {
     // Send a message to the socket to delete the prediction
-    this.client.send(JSON.stringify({type: 'delete', id: predictionId}))
+    if (this.isActive() && this.userHasPermissions()) {
+      this.client.send(JSON.stringify({type: 'delete', id: predictionId}))
+    }
   }
 
   handleMouseUp = (predictionId, position) => {
     // Send a message to the socket to update the prediction position
-    this.client.send(JSON.stringify({
-      type: 'update',
-      id: predictionId,
-      positionX: position.x,
-      positionY: position.y
-    }))
+    if (this.isActive() && this.userHasPermissions()) {
+      this.client.send(JSON.stringify({
+        type: 'update',
+        id: predictionId,
+        positionX: position.x,
+        positionY: position.y
+      }))
+    }
   }
 
   handleMouseMove = (predictionId, position) => {
@@ -117,20 +138,21 @@ class IndexPage extends React.Component {
   render () {
     return (
       <Layout>
-        {this.props.username ?
-          <form onSubmit={this.handleSubmit}>
-            <label htmlFor="prediction-text">Add a new prediction:</label>
-            <br />
-            <textarea name="prediction-text"
-              value={this.state.currText}
-              onChange={this.handleChange}
-            />
-            <br />
-            <input type="submit" value="Submit" />
-          </form>
-          :
-          <p><a href={this.props.loginUrl}>Log in</a> to start adding predictions.</p>
-        }
+        {this.isActive() && (
+          this.userHasPermissions() ?
+            <form onSubmit={this.handleSubmit}>
+              <label htmlFor="prediction-text">Add a new prediction:</label>
+              <br />
+              <textarea name="prediction-text"
+                value={this.state.currText}
+                onChange={this.handleChange}
+              />
+              <br />
+              <input type="submit" value="Submit" />
+            </form>
+            :
+            <p><a href={this.props.loginUrl}>Log in</a> to start adding predictions.</p>
+        )}
         {this.state.predictions.map(prediction => (
           <Sticky
             key={prediction.id}

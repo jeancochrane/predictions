@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.shortcuts import render
 from django.views.generic import TemplateView
 from django.urls import reverse
@@ -14,7 +15,9 @@ class Home(TemplateView):
         context['props'] = {
             'predictions': [prediction.as_dict() for prediction in predictions],
             'username': self.request.user.username,
-            'loginUrl': f'{reverse("admin:login")}?next={reverse("home")}'
+            'loginUrl': f'{reverse("admin:login")}?next={reverse("home")}',
+            'isActive': settings.PREDICTIONS_ACTIVE,
+            'userHasPermissions': self.request.user.is_staff
         }
         return context
 
