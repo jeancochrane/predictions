@@ -19,7 +19,8 @@ class Home(TemplateView):
             'isActive': settings.PREDICTIONS_ACTIVE,
             'userHasPermissions': models.user_can_manage_predictions(
                 self.request.user
-            )
+            ),
+            'userMap': models.get_user_info()
         }
         return context
 

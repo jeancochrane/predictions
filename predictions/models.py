@@ -39,3 +39,12 @@ def user_can_manage_predictions(user):
         f'predictions.{verb}_prediction' for verb in
         ['add', 'change', 'delete', 'view']
     ])
+
+
+def get_user_info():
+    """Return a map of information."""
+    user_info = {}
+    User = get_user_model()
+    for user in User.objects.all():
+        user_info[user.id] = {'username': user.username}
+    return user_info

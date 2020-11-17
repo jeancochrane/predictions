@@ -7,17 +7,16 @@ from django.conf import settings
 from predictions import models
 
 
-class PredictionConsumer(WebsocketConsumer):
+class BaseConsumer(WebsocketConsumer):
 
     def connect(self):
-        self.user = self.scope['user']
-        if models.user_can_manage_predictions(self.user) and settings.PREDICTIONS_ACTIVE:
+        if settings.PREDICTIONS_ACTIVE:
             self.is_connected = True
-            self.year = self.scope['url_route']['kwargs']['year']
-            self.year_group_name = f'predictions_{self.year}'
+            self.user = self.scope['user']
+            self.group_name = self.get_group_name()
 
             async_to_sync(self.channel_layer.group_add)(
-                self.year_group_name,
+                self.group_name,
                 self.channel_name
             )
             self.accept()
@@ -25,25 +24,50 @@ class PredictionConsumer(WebsocketConsumer):
             self.is_connected = False
             self.close()
 
+    def get_group_name(self):
+        return 'predictions_group'
+
     def disconnect(self, close_code):
         if self.is_connected:
             async_to_sync(self.channel_layer.group_discard)(
-                self.year_group_name,
+                self.group_name,
                 self.channel_name
             )
 
     def receive(self, text_data):
-        text_data_json = json.loads(text_data)
-        message_type = text_data_json.get('type')
-        if message_type == 'create':
-            self.create_prediction(text_data_json)
-        elif message_type == 'update':
-            self.update_prediction(text_data_json)
-        elif message_type == 'delete':
-            self.delete_prediction(text_data_json)
+        raise NotImplementedError(
+            'Children must implement the receive() method'
+        )
+
+    def send_error(self, message):
+        """
+        Send an error message to a single connection.
+        """
+        self.send(text_data=json.dumps({
+            'type': 'error',
+            'text': message
+        }))
+
+
+class PredictionConsumer(BaseConsumer):
+
+    def receive(self, text_data):
+        if models.user_can_manage_predictions(self.user):
+            text_data_json = json.loads(text_data)
+            message_type = text_data_json.get('type')
+            if message_type == 'create':
+                self.create_prediction(text_data_json)
+            elif message_type == 'update':
+                self.update_prediction(text_data_json)
+            elif message_type == 'delete':
+                self.delete_prediction(text_data_json)
+            else:
+                self.send_error(
+                    f'Message type not recognized: {message_type}'
+                )
         else:
             self.send_error(
-                f'Message type not recognized: {message_type}'
+                'You do not have permission to send messages'
             )
 
     def create_prediction(self, text_data_json):
@@ -57,7 +81,7 @@ class PredictionConsumer(WebsocketConsumer):
 
         prediction = models.Prediction.objects.create(user=self.user, text=text)
         async_to_sync(self.channel_layer.group_send)(
-           self.year_group_name,
+           self.group_name,
            {
                 'type': 'send_create_message',
                 'text': text,
@@ -90,7 +114,7 @@ class PredictionConsumer(WebsocketConsumer):
         prediction.save()
 
         async_to_sync(self.channel_layer.group_send)(
-            self.year_group_name,
+            self.group_name,
             {
                 'type': 'send_update_message',
                 'id': prediction_id,
@@ -116,7 +140,7 @@ class PredictionConsumer(WebsocketConsumer):
         else:
             prediction.delete()
             async_to_sync(self.channel_layer.group_send)(
-                self.year_group_name,
+                self.group_name,
                 {
                     'type': 'send_delete_message',
                     'id': prediction_id
@@ -156,11 +180,43 @@ class PredictionConsumer(WebsocketConsumer):
             'id': event['id']
         }))
 
-    def send_error(self, message):
-        """
-        Send an error message to a single connection.
-        """
-        self.send(text_data=json.dumps({
-            'type': 'error',
-            'text': message
-        }))
+
+class CursorConsumer(BaseConsumer):
+
+    def get_group_name(self):
+        return 'predictions_cursor'
+
+    def receive(self, text_data):
+        if models.user_can_manage_predictions(self.user):
+            # Initialize the output message data dict
+            message_data = {
+                'type': 'send_cursor_message',
+                'userId': self.user.id
+            }
+            # Parse the incoming data
+            text_data_json = json.loads(text_data)
+            for coord_param in ['x', 'y']:
+                try:
+                    message_data[coord_param] = text_data_json[coord_param]
+                except KeyError:
+                    self.send_error(
+                        f'Missing required coordinate parameter "{coord_param}"'
+                    )
+            async_to_sync(self.channel_layer.group_send)(
+                self.group_name,
+                message_data
+            )
+        else:
+            self.send_error(
+                'You do not have permission to send messages'
+            )
+
+    def send_cursor_message(self, event):
+        # Only send cursor messages to other users
+        if event['userId'] != self.user.id:
+            self.send(text_data=json.dumps({
+                'type': 'cursor',
+                'userId': event['userId'],
+                'x': event['x'],
+                'y': event['y']
+            }))
