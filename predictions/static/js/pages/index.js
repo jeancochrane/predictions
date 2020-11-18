@@ -104,7 +104,7 @@ class IndexPage extends React.Component {
       const data = JSON.parse(message.data)
       switch (data.type) {
         case 'create':
-          this.addPrediction(data.id, data.text, data.username, data.positionX, data.positionY)
+          this.addPrediction(data.id, data.text, data.userId, data.positionX, data.positionY)
           break
         case 'update':
           this.updatePrediction(data.id, data.positionX, data.positionY)
@@ -124,12 +124,12 @@ class IndexPage extends React.Component {
     }
   }
 
-  addPrediction = (id, text, username, positionX, positionY) => {
+  addPrediction = (id, text, userId, positionX, positionY) => {
     this.setState(state => {
       return {
         ...state,
         predictions: state.predictions.concat(
-          {id, text, username, positionX, positionY}
+          {id, text, userId, positionX, positionY}
         )
       }
     })
@@ -223,10 +223,11 @@ class IndexPage extends React.Component {
             handleClose={this.handleClose}
             handleMouseMove={this.handleMouseMove}
             handleMouseUp={this.handleMouseUp}
-            editable={this.props.username === prediction.username}
+            editable={this.props.userId === prediction.userId}
             position={{x: prediction.positionX, y: prediction.positionY}}
+            color={this.userMap[prediction.userId].color}
           >
-            {prediction.username}: {prediction.text}
+            {this.userMap[prediction.userId].username}: {prediction.text}
           </Sticky>
         ))}
         {Object.entries(this.state.cursors).map(([userId, cursor]) => (

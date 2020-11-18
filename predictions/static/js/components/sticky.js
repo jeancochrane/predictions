@@ -80,6 +80,7 @@ class Sticky extends React.Component {
         onMouseMove={this.onMouseMove}
         style={{
           position: 'absolute',
+          backgroundColor: this.props.color ? this.props.color : '#ebe9a5',
           left: this.props.position.x + 'px',
           top: this.props.position.y + 'px',
         }}

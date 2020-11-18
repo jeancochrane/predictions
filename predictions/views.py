@@ -14,7 +14,7 @@ class Home(TemplateView):
         predictions = models.Prediction.objects.all()
         context['props'] = {
             'predictions': [prediction.as_dict() for prediction in predictions],
-            'username': self.request.user.username,
+            'userId': self.request.user.id,
             'loginUrl': f'{reverse("admin:login")}?next={reverse("home")}',
             'isActive': settings.PREDICTIONS_ACTIVE,
             'userHasPermissions': models.user_can_manage_predictions(

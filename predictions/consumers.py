@@ -85,7 +85,7 @@ class PredictionConsumer(BaseConsumer):
            {
                 'type': 'send_create_message',
                 'text': text,
-                'username': self.user.username,
+                'userId': self.user.id,
                 'id': prediction.id,
                 'position_x': prediction.position_x,
                 'position_y': prediction.position_y
@@ -154,7 +154,7 @@ class PredictionConsumer(BaseConsumer):
         self.send(text_data=json.dumps({
             'type': 'create',
             'text': event['text'],
-            'username': event['username'],
+            'userId': event['userId'],
             'id': event['id'],
             'positionX': event['position_x'],
             'positionY': event['position_y']

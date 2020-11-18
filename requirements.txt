@@ -11,3 +11,4 @@ pytest-mock==3.3.1
 sentry-sdk==0.19.2
 service-identity==18.1.0
 whitenoise==5.2.0
+django-colorfield==0.3.2

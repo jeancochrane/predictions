@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'compressor',
     'channels',
+    'colorfield',
     'predictions'
 ]
 
