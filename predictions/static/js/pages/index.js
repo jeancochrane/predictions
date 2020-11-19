@@ -3,6 +3,7 @@ import ReactDOM from "react-dom"
 
 import Sticky from "../components/sticky"
 import Cursor from "../components/cursor"
+import Map from "../components/map"
 
 
 class IndexPage extends React.Component {
@@ -103,7 +104,7 @@ class IndexPage extends React.Component {
       const data = JSON.parse(message.data)
       switch (data.type) {
         case 'create':
-          this.addPrediction(data.id, data.text, data.userId, data.positionX, data.positionY)
+          this.addPrediction(data.id, data.text, data.userId, data.color, data.positionX, data.positionY)
           break
         case 'update':
           this.updatePrediction(data.id, data.positionX, data.positionY)
@@ -123,12 +124,12 @@ class IndexPage extends React.Component {
     }
   }
 
-  addPrediction = (id, text, userId, positionX, positionY) => {
+  addPrediction = (id, text, userId, color, positionX, positionY) => {
     this.setState(state => {
       return {
         ...state,
         predictions: state.predictions.concat(
-          {id, text, userId, positionX, positionY}
+          {id, text, userId, color, positionX, positionY}
         )
       }
     })
@@ -230,6 +231,19 @@ class IndexPage extends React.Component {
               <p><a href={this.props.loginUrl}>Log in</a> to start adding predictions.</p>
           )}
         </div>
+        <div
+          style={{
+            position: "fixed",
+            bottom: 15,
+            right: 15,
+            zIndex: 999,
+            backgroundColor: "#fefefe",
+            padding: 20,
+            border: "2px solid #b7b7b7",
+          }}
+        >
+          <Map predictions={this.state.predictions} />
+        </div>
         {this.state.predictions.map(prediction => (
           <Sticky
             key={prediction.id}
@@ -239,7 +253,7 @@ class IndexPage extends React.Component {
             handleMouseUp={this.handleMouseUp}
             editable={this.props.userId === prediction.userId}
             position={{x: prediction.positionX, y: prediction.positionY}}
-            color={this.userMap[prediction.userId].color}
+            color={prediction.color}
           >
             {this.userMap[prediction.userId].username}: {prediction.text}
           </Sticky>

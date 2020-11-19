@@ -34,6 +34,7 @@ class Prediction(models.Model):
         return {
             'id': self.id,
             'userId': self.user.id,
+            'color': self.user.profile.color,
             'username': self.user.username,
             'text': self.text,
             'created': self.created,

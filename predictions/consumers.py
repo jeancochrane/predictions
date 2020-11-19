@@ -86,6 +86,7 @@ class PredictionConsumer(BaseConsumer):
                 'type': 'send_create_message',
                 'text': text,
                 'userId': self.user.id,
+                'color': self.user.profile.color,
                 'id': prediction.id,
                 'position_x': prediction.position_x,
                 'position_y': prediction.position_y
@@ -155,6 +156,7 @@ class PredictionConsumer(BaseConsumer):
             'type': 'create',
             'text': event['text'],
             'userId': event['userId'],
+            'color': event['color'],
             'id': event['id'],
             'positionX': event['position_x'],
             'positionY': event['position_y']
