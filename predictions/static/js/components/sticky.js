@@ -74,15 +74,19 @@ class Sticky extends React.Component {
   render = () => {
     return (
       <div
-        className='sticky'
         onMouseDown={this.onMouseDown}
         onMouseUp={this.onMouseUp}
         onMouseMove={this.onMouseMove}
         style={{
-          position: 'absolute',
-          backgroundColor: this.props.color ? this.props.color : '#ebe9a5',
-          left: this.props.position.x + 'px',
-          top: this.props.position.y + 'px',
+          cursor: "pointer",
+          width: 200,
+          height: 200,
+          border: "2px solid #b7b7b7",
+          padding: 10,
+          position: "absolute",
+          backgroundColor: this.props.color ? this.props.color : "#ebe9a5",
+          left: this.props.position.x + "px",
+          top: this.props.position.y + "px",
         }}
       >
         {this.props.editable &&

@@ -1,7 +1,6 @@
 import React from "react"
 import ReactDOM from "react-dom"
 
-import Layout from "../components/layout"
 import Sticky from "../components/sticky"
 import Cursor from "../components/cursor"
 
@@ -200,22 +199,37 @@ class IndexPage extends React.Component {
 
   render () {
     return (
-      <Layout>
-        {this.isActive() && (
-          this.userHasPermissions() ?
-            <form onSubmit={this.handleSubmit}>
-              <label htmlFor="prediction-text">Add a new prediction:</label>
-              <br />
-              <textarea name="prediction-text"
-                value={this.state.currText}
-                onChange={this.handleChange}
-              />
-              <br />
-              <input type="submit" value="Submit" />
-            </form>
-            :
-            <p><a href={this.props.loginUrl}>Log in</a> to start adding predictions.</p>
-        )}
+      <>
+        <div
+          style={{
+            position: "fixed",
+            bottom: 15,
+            left: 15,
+            zIndex: 999,
+            backgroundColor: "#fefefe",
+            padding: 20,
+            border: "2px solid #b7b7b7",
+          }}
+        >
+          {this.isActive() && (
+            this.userHasPermissions() ?
+              <form onSubmit={this.handleSubmit}>
+                <label htmlFor="prediction-text">Add a new prediction:</label>
+                <br />
+                <textarea
+                  name="prediction-text"
+                  rows="5"
+                  cols="30"
+                  value={this.state.currText}
+                  onChange={this.handleChange}
+                />
+                <br />
+                <input type="submit" value="Submit" />
+              </form>
+              :
+              <p><a href={this.props.loginUrl}>Log in</a> to start adding predictions.</p>
+          )}
+        </div>
         {this.state.predictions.map(prediction => (
           <Sticky
             key={prediction.id}
@@ -240,7 +254,7 @@ class IndexPage extends React.Component {
             color={this.userMap[userId].color}
           />
         ))}
-      </Layout>
+      </>
     )
   }
 }
