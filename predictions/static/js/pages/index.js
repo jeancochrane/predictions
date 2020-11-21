@@ -11,7 +11,7 @@ class IndexPage extends React.Component {
     super(props)
     // Only open websocket connections if the game is active
     if (this.isActive()) {
-      const socketProtocol = window.location.protocol === 'https' ? 'wss' : 'ws'
+      const socketProtocol = window.location.protocol.startsWith('https') ? 'wss' : 'ws'
       // Always open a cursor socket
       this.cursorSocket = new WebSocket(
         `${socketProtocol}://${window.location.host}/ws/cursor/`
