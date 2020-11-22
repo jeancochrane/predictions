@@ -51,6 +51,25 @@ class Profile(models.Model):
         return self.user.username
 
 
+class ChatMessage(models.Model):
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
+    text = models.TextField()
+    created = models.DateTimeField(auto_now_add=True)
+
+    max_length = 500
+
+    class Meta:
+        ordering = ('created',)
+
+    def as_dict(self):
+        return {
+            'id': self.id,
+            'userId': self.user.id,
+            'text': self.text,
+            'created': self.created
+        }
+
+
 def user_can_manage_predictions(user):
     """Check if a User can manage the Prediction model."""
     return user.has_perms([
