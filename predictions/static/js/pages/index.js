@@ -4,6 +4,7 @@ import ReactDOM from "react-dom"
 import Sticky from "../components/sticky"
 import Cursor from "../components/cursor"
 import Map from "../components/map"
+import Chat from "../components/chat"
 
 
 class IndexPage extends React.Component {
@@ -29,7 +30,7 @@ class IndexPage extends React.Component {
       currText: '',  // Current prediction text (controlled by the form input)
       predictions: props.predictions ? props.predictions : [],  // List of prediction objects
       cursors: {},  // Map of cursor objects, indexed by user ID
-      chatMessages: props.messages ? props.messages : [],  // List of messages in the chat
+      messages: props.messages ? props.messages : [],  // List of messages in the chat
     }
   }
 
@@ -264,6 +265,19 @@ class IndexPage extends React.Component {
           }}
         >
           <Map predictions={this.state.predictions} />
+        </div>
+        <div
+          style={{
+            position: "fixed",
+            bottom: 165,
+            right: 15,
+            zIndex: 999,
+            backgroundColor: "#fefefe",
+            padding: 20,
+            border: "2px solid #b7b7b7",
+          }}
+        >
+          <Chat messages={this.state.messages} />
         </div>
         {this.state.predictions.map(prediction => (
           <Sticky
