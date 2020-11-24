@@ -114,8 +114,17 @@ class IndexPage extends React.Component {
   }
 
   updateChat = (userId, messageId, text, created) => {
-    // TODO: Update the chat window
-    console.log(userId, messageId, text, created)
+    username = this.userMap[userId].username
+    this.setState(state => {
+      // Prepend new message to array of existing messages, since messages are
+      // reversed in the Chat component
+      return {
+        ...state,
+        messages: [{username, messageId, text, created}].concat(
+          state.messages
+        )
+      }
+    })
   }
 
   initializePredictionSocket = () => {
@@ -220,6 +229,14 @@ class IndexPage extends React.Component {
     this.updatePrediction(predictionId, position.x, position.y)
   }
 
+  handleSendChat = (message) => {
+    if (this.isActive() && this.userHasPermissions()) {
+      this.sockets.chat.send(JSON.stringify({ message }))
+    } else {
+      console.log('User must be logged in to send a chat message')
+    }
+  }
+
   render () {
     return (
       <>
@@ -277,7 +294,12 @@ class IndexPage extends React.Component {
             border: "2px solid #b7b7b7",
           }}
         >
-          <Chat messages={this.state.messages} />
+          <Chat
+            messages={this.state.messages}
+            isActive={this.isActive()}
+            userHasPermissions={this.userHasPermissions()}
+            handleSendChat={this.handleSendChat}
+          />
         </div>
         {this.state.predictions.map(prediction => (
           <Sticky
