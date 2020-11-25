@@ -296,6 +296,7 @@ class IndexPage extends React.Component {
         >
           <Chat
             messages={this.state.messages}
+            userMap={this.userMap}
             isActive={this.isActive()}
             userHasPermissions={this.userHasPermissions()}
             handleSendChat={this.handleSendChat}

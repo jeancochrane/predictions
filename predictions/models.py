@@ -1,5 +1,6 @@
 import random
 
+import pytz
 from colorfield.fields import ColorField
 from django.db import models
 from django.contrib.auth import get_user_model
@@ -71,9 +72,9 @@ class ChatMessage(models.Model):
             'created': self.get_created()
         }
 
-    def get_created(self, timefmt='%b %-m, %-I:%M %p'):
+    def get_created(self, timezone='America/Chicago', timefmt='%b %-m, %-I:%M %p'):
         """Get the `created` attr, formatted according to timefmt string"""
-        return self.created.strftime(timefmt)
+        return self.created.astimezone(pytz.timezone(timezone)).strftime(timefmt)
 
 
 def user_can_manage_predictions(user):

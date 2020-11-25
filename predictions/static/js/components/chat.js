@@ -1,6 +1,6 @@
 import React, { useState } from "react"
 
-const Chat = ({ messages, isActive, userHasPermissions, handleSendChat }) => {
+const Chat = ({ messages, userMap, isActive, userHasPermissions, handleSendChat }) => {
   const [expanded, setExpanded] = useState(false)
   const [currMessage, setCurrMessage] = useState('')
   const handleSubmit = (e) => {
@@ -37,7 +37,16 @@ const Chat = ({ messages, isActive, userHasPermissions, handleSendChat }) => {
         {messages.length > 0 ?
           messages.map(message => (
             <span>
-              <strong>{message.username}</strong>&nsbp;
+              <span
+                style={{
+                  backgroundColor: userMap[message.userId].color || 'inherit',
+                  height: 10,
+                  width: 10,
+                  borderRadius: 5,
+                  display: 'inline-block'
+                }}
+              ></span>&nbsp;
+              <strong>{message.username}</strong>&nbsp;
               <span style={{color: "grey"}}>
                 {message.created}
               </span>
