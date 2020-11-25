@@ -37,7 +37,7 @@ const Chat = ({ messages, isActive, userHasPermissions, handleSendChat }) => {
         {messages.length > 0 ?
           messages.map(message => (
             <span>
-              <strong>{message.username}</strong>
+              <strong>{message.username}</strong>&nsbp;
               <span style={{color: "grey"}}>
                 {message.created}
               </span>

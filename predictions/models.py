@@ -34,8 +34,8 @@ class Prediction(models.Model):
         return {
             'id': self.id,
             'userId': self.user.id,
-            'color': self.user.profile.color,
             'username': self.user.username,
+            'color': self.user.profile.color,
             'text': self.text,
             'created': self.created,
             'positionX': self.position_x,
@@ -59,15 +59,21 @@ class ChatMessage(models.Model):
     max_length = 500
 
     class Meta:
-        ordering = ('created',)
+        # Reverse ordering since we invert message display
+        ordering = ('-created',)
 
     def as_dict(self):
         return {
             'id': self.id,
             'userId': self.user.id,
+            'username': self.user.username,
             'text': self.text,
-            'created': self.created
+            'created': self.get_created()
         }
+
+    def get_created(self, timefmt='%b %-m, %-I:%M %p'):
+        """Get the `created` attr, formatted according to timefmt string"""
+        return self.created.strftime(timefmt)
 
 
 def user_can_manage_predictions(user):

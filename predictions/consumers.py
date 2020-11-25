@@ -231,7 +231,7 @@ class ChatConsumer(BaseConsumer):
 
     def receive(self, text_data):
         if models.user_can_manage_predictions(self.user):
-            text_data_json = json.parse(text_data)
+            text_data_json = json.loads(text_data)
             message_text = text_data_json.get('message')
             if not message_text:
                 self.send_error('message cannot be empty')
@@ -242,14 +242,15 @@ class ChatConsumer(BaseConsumer):
             else:
                 chat_message = models.ChatMessage.objects.create(
                     user=self.user,
-                    text=message
+                    text=message_text
                 )
                 message_data = {
                     'type': 'send_chat_message',
                     'userId': self.user.id,
+                    'username': self.user.username,
                     'text': message_text,
                     'messageId': chat_message.id,
-                    'created': chat_message.created
+                    'created': chat_message.get_created()
                 }
                 async_to_sync(self.channel_layer.group_send)(
                     self.group_name,
