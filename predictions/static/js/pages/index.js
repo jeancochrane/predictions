@@ -4,6 +4,7 @@ import ReactDOM from "react-dom"
 import Sticky from "../components/sticky"
 import Cursor from "../components/cursor"
 import Map from "../components/map"
+import Chat from "../components/chat"
 
 
 class IndexPage extends React.Component {
@@ -12,13 +13,14 @@ class IndexPage extends React.Component {
     // Only open websocket connections if the game is active
     if (this.isActive()) {
       const socketProtocol = window.location.protocol.startsWith('https') ? 'wss' : 'ws'
-      // Always open a cursor socket
-      this.cursorSocket = new WebSocket(
-        `${socketProtocol}://${window.location.host}/ws/cursor/`
-      )
+      // Always open cursor and chat sockets
+      this.sockets = {
+        cursor: new WebSocket(`${socketProtocol}://${window.location.host}/ws/cursor/`),
+        chat: new WebSocket(`${socketProtocol}://${window.location.host}/ws/chat/`)
+      }
       // Only open the predictions websocket if the user has permissions
       if (this.userHasPermissions()) {
-        this.predictionSocket = new WebSocket(
+        this.sockets.predictions = new WebSocket(
           `${socketProtocol}://${window.location.host}/ws/predictions/`
         )
       }
@@ -28,6 +30,7 @@ class IndexPage extends React.Component {
       currText: '',  // Current prediction text (controlled by the form input)
       predictions: props.predictions ? props.predictions : [],  // List of prediction objects
       cursors: {},  // Map of cursor objects, indexed by user ID
+      messages: props.messages ? props.messages : [],  // List of messages in the chat
     }
   }
 
@@ -44,6 +47,7 @@ class IndexPage extends React.Component {
   componentDidMount = () => {
     if (this.isActive()) {
       this.initializeCursorSocket()
+      this.initializeChatSocket()
       if (this.userHasPermissions()) {
         this.initializePredictionSocket()
       }
@@ -51,14 +55,14 @@ class IndexPage extends React.Component {
   }
 
   initializeCursorSocket = () => {
-    this.cursorSocket.onopen = () => {
+    this.sockets.cursor.onopen = () => {
       console.log('Cursor socket connected')
     }
-    this.cursorSocket.onmessage = (message) => {
+    this.sockets.cursor.onmessage = (message) => {
       const data = JSON.parse(message.data)
       this.updateCursor(data.userId, data.x, data.y)
     }
-    this.cursorSocket.onclose = () => {
+    this.sockets.cursor.onclose = () => {
       console.error('Cursor socket close unexpectedly')
     }
     if (this.userHasPermissions()) {
@@ -87,7 +91,7 @@ class IndexPage extends React.Component {
       if (prevCursorX !== currCursorX || prevCursorY !== currCursorY) {
         prevCursorX = currCursorX
         prevCursorY = currCursorY
-        this.cursorSocket.send(JSON.stringify({
+        this.sockets.cursor.send(JSON.stringify({
           'type': 'cursor',
           'x': currCursorX,
           'y': currCursorY
@@ -96,11 +100,38 @@ class IndexPage extends React.Component {
     }, 100)
   }
 
+  initializeChatSocket = () => {
+    this.sockets.chat.onopen = () => {
+      console.log('Chat socket connected')
+    }
+    this.sockets.chat.onmessage = (message) => {
+      const data = JSON.parse(message.data)
+      this.updateChat(data.userId, data.messageId, data.text, data.created)
+    }
+    this.sockets.chat.onclose = () => {
+      console.error('Chat socket closed unexpectedly')
+    }
+  }
+
+  updateChat = (userId, messageId, text, created) => {
+    const username = this.userMap[userId].username
+    this.setState(state => {
+      // Prepend new message to array of existing messages, since messages are
+      // reversed in the Chat component
+      return {
+        ...state,
+        messages: [{userId, username, messageId, text, created}].concat(
+          state.messages
+        )
+      }
+    })
+  }
+
   initializePredictionSocket = () => {
-    this.predictionSocket.onopen = () => {
+    this.sockets.predictions.onopen = () => {
       console.log('Predictions socket connected')
     }
-    this.predictionSocket.onmessage = (message) => {
+    this.sockets.predictions.onmessage = (message) => {
       const data = JSON.parse(message.data)
       switch (data.type) {
         case 'create':
@@ -119,7 +150,7 @@ class IndexPage extends React.Component {
           console.log(`Unrecognized message type: ${data.type}`)
       }
     }
-    this.predictionSocket.onclose = () => {
+    this.sockets.predictions.onclose = () => {
       console.error('Predictions socket closed unexpectedly')
     }
   }
@@ -168,7 +199,7 @@ class IndexPage extends React.Component {
     // Send a message to the socket to create a new prediction
     e.preventDefault()
     if (this.isActive() && this.userHasPermissions()) {
-      this.predictionSocket.send(JSON.stringify({type: 'create', text: this.state.currText}))
+      this.sockets.predictions.send(JSON.stringify({type: 'create', text: this.state.currText}))
       // Clear the textarea
       this.setState({currText: ''})
     }
@@ -177,14 +208,14 @@ class IndexPage extends React.Component {
   handleClose = (predictionId) => {
     // Send a message to the socket to delete the prediction
     if (this.isActive() && this.userHasPermissions()) {
-      this.predictionSocket.send(JSON.stringify({type: 'delete', id: predictionId}))
+      this.sockets.predictions.send(JSON.stringify({type: 'delete', id: predictionId}))
     }
   }
 
   handleMouseUp = (predictionId, position) => {
     // Send a message to the socket to update the prediction position
     if (this.isActive() && this.userHasPermissions()) {
-      this.predictionSocket.send(JSON.stringify({
+      this.sockets.predictions.send(JSON.stringify({
         type: 'update',
         id: predictionId,
         positionX: position.x,
@@ -196,6 +227,14 @@ class IndexPage extends React.Component {
   handleMouseMove = (predictionId, position) => {
     // Reset the position, but don't send the new position to the server
     this.updatePrediction(predictionId, position.x, position.y)
+  }
+
+  handleSendChat = (message) => {
+    if (this.isActive() && this.userHasPermissions()) {
+      this.sockets.chat.send(JSON.stringify({ message }))
+    } else {
+      console.log('User must be logged in to send a chat message')
+    }
   }
 
   render () {
@@ -243,6 +282,25 @@ class IndexPage extends React.Component {
           }}
         >
           <Map predictions={this.state.predictions} />
+        </div>
+        <div
+          style={{
+            position: "fixed",
+            bottom: 165,
+            right: 15,
+            zIndex: 999,
+            backgroundColor: "#fefefe",
+            padding: 20,
+            border: "2px solid #b7b7b7",
+          }}
+        >
+          <Chat
+            messages={this.state.messages}
+            userMap={this.userMap}
+            isActive={this.isActive()}
+            userHasPermissions={this.userHasPermissions()}
+            handleSendChat={this.handleSendChat}
+          />
         </div>
         {this.state.predictions.map(prediction => (
           <Sticky

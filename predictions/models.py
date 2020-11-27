@@ -1,5 +1,6 @@
 import random
 
+import pytz
 from colorfield.fields import ColorField
 from django.db import models
 from django.contrib.auth import get_user_model
@@ -34,8 +35,8 @@ class Prediction(models.Model):
         return {
             'id': self.id,
             'userId': self.user.id,
-            'color': self.user.profile.color,
             'username': self.user.username,
+            'color': self.user.profile.color,
             'text': self.text,
             'created': self.created,
             'positionX': self.position_x,
@@ -49,6 +50,31 @@ class Profile(models.Model):
 
     def __str__(self):
         return self.user.username
+
+
+class ChatMessage(models.Model):
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
+    text = models.TextField()
+    created = models.DateTimeField(auto_now_add=True)
+
+    max_length = 500
+
+    class Meta:
+        # Reverse ordering since we invert message display
+        ordering = ('-created',)
+
+    def as_dict(self):
+        return {
+            'id': self.id,
+            'userId': self.user.id,
+            'username': self.user.username,
+            'text': self.text,
+            'created': self.get_created()
+        }
+
+    def get_created(self, timezone='America/Chicago', timefmt='%b %-m, %-I:%M %p'):
+        """Get the `created` attr, formatted according to timefmt string"""
+        return self.created.astimezone(pytz.timezone(timezone)).strftime(timefmt)
 
 
 def user_can_manage_predictions(user):

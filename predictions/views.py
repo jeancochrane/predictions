@@ -12,8 +12,10 @@ class Home(TemplateView):
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
         predictions = models.Prediction.objects.all()
+        messages = models.ChatMessage.objects.all()
         context['props'] = {
             'predictions': [prediction.as_dict() for prediction in predictions],
+            'messages': [message.as_dict() for message in messages],
             'userId': self.request.user.id,
             'loginUrl': f'{reverse("admin:login")}?next={reverse("home")}',
             'isActive': settings.PREDICTIONS_ACTIVE,
