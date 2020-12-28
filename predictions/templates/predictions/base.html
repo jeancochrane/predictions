@@ -39,16 +39,41 @@
 
     <!-- Override this block to add extra stylesheets -->
     {% block extra_css %}{% endblock %}
+
+    <!-- Disco ball styles -->
+  <style>
+    .disco-ball {
+      position: fixed;
+      left: 40%;
+      z-index: 2;
+      opacity: 0;
+      transition: opacity 0.5s linear;
+    }
+
+    .disco-ball.visible {
+      opacity: 1;
+    }
+  </style>
   </head>
 
   <body style="margin: 0; height: 5000px; width: 5000px">
+    <img
+      class="disco-ball"
+      id="disco-ball"
+      src="{% static 'images/discoball.gif' %}"
+    />
     <header style="background: #e49fb2; margin-bottom: 15px">
       <div style="max-width: 960px; padding: 20px 15px; margin-left: 200px">
-        <h1 style="margin: 0">
+        <h1 style="margin: 0; display: inline-block">
           <a href="/" style="color: white; text-decoration: none">
             🎱 2021 Predictions
           </a>
         </h1>
+        <p style="float: right; display: inline-block">
+          <a role="button" href="#" id="disco-mode-button" style="color: white; text-decoration: none">
+            <span id="disco-mode-verb">Activate</span> disco mode
+          </a>
+        </p>
       </div>
     </header>
     <main>
@@ -58,6 +83,22 @@
     <!-- Load external scripts -->
     <script src="{% static 'js/fontawesome.min.js' %}"></script>
     <script src="{% static 'js/solid.min.js' %}"></script>
+
+    <script type="text/javascript">
+      var discoModeActivated = false
+      document.getElementById('disco-mode-button').addEventListener('click', function(e) {
+        e.preventDefault()
+          if (discoModeActivated) {
+            discoModeActivated = false
+            document.getElementById('disco-ball').classList.remove('visible')
+            document.getElementById('disco-mode-verb').innerText = 'Activate'
+          } else {
+            discoModeActivated = true
+            document.getElementById('disco-ball').classList.add('visible')
+            document.getElementById('disco-mode-verb').innerText = 'Deactivate'
+          }
+      })
+    </script>
 
     <!-- Load extra external scripts -->
     {% block extra_js %}{% endblock %}
