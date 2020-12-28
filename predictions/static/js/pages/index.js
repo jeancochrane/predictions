@@ -13,16 +13,10 @@ class IndexPage extends React.Component {
     // Only open websocket connections if the game is active
     if (this.isActive()) {
       const socketProtocol = window.location.protocol.startsWith('https') ? 'wss' : 'ws'
-      // Always open cursor and chat sockets
       this.sockets = {
         cursor: new WebSocket(`${socketProtocol}://${window.location.host}/ws/cursor/`),
-        chat: new WebSocket(`${socketProtocol}://${window.location.host}/ws/chat/`)
-      }
-      // Only open the predictions websocket if the user has permissions
-      if (this.userHasPermissions()) {
-        this.sockets.predictions = new WebSocket(
-          `${socketProtocol}://${window.location.host}/ws/predictions/`
-        )
+        chat: new WebSocket(`${socketProtocol}://${window.location.host}/ws/chat/`),
+        predictions: new WebSocket(`${socketProtocol}://${window.location.host}/ws/predictions/`)
       }
     }
     this.userMap = props.userMap  // Map of cursor info indexed by user ID
@@ -48,9 +42,7 @@ class IndexPage extends React.Component {
     if (this.isActive()) {
       this.initializeCursorSocket()
       this.initializeChatSocket()
-      if (this.userHasPermissions()) {
-        this.initializePredictionSocket()
-      }
+      this.initializePredictionSocket()
     }
   }
 
@@ -251,7 +243,7 @@ class IndexPage extends React.Component {
             border: "2px solid #b7b7b7",
           }}
         >
-          {this.isActive() && (
+          {this.isActive() ? (
             this.userHasPermissions() ?
               <form onSubmit={this.handleSubmit}>
                 <label htmlFor="prediction-text">Add a new prediction:</label>
@@ -268,7 +260,10 @@ class IndexPage extends React.Component {
               </form>
               :
               <p><a href={this.props.loginUrl}>Log in</a> to start adding predictions.</p>
-          )}
+            )
+            :
+            <p>This predictions game is currently archived.</p>
+          }
         </div>
         <div
           style={{
