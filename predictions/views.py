@@ -27,6 +27,10 @@ class Home(TemplateView):
         return context
 
 
+class Guidelines(TemplateView):
+    template_name = 'predictions/guidelines.html'
+
+
 def page_not_found(request, exception, template_name='predictions/404.html'):
     return render(request, template_name, status=404)
 

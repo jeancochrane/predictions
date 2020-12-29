@@ -20,6 +20,7 @@ from predictions import views
 
 urlpatterns = [
     path('', views.Home.as_view(), name='home'),
+    path('guidelines/', views.Guidelines.as_view(), name='guidelines'),
     path('admin/', admin.site.urls),
 ]
 

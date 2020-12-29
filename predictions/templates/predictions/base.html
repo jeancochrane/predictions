@@ -53,6 +53,29 @@
     .disco-ball.visible {
       opacity: 1;
     }
+
+    .nav-wrapper {
+      max-width: 1200px;
+      padding: 20px 15px;
+      margin-left: 20px;
+    }
+
+    @media (max-width: 1200px) {
+      .nav-wrapper {
+        max-width: 960px;
+      }
+    }
+
+    @media (max-width: 960px) {
+      .nav-wrapper {
+        max-width: 650px;
+      }
+    }
+
+    .nav-link {
+      color: white;
+      text-decoration: none;
+    }
   </style>
   </head>
 
@@ -63,16 +86,19 @@
       src="{% static 'images/discoball.gif' %}"
     />
     <header style="background: #e49fb2; margin-bottom: 15px">
-      <div style="max-width: 960px; padding: 20px 15px; margin-left: 200px">
+      <div class="nav-wrapper">
         <h1 style="margin: 0; display: inline-block">
           <a href="/" style="color: white; text-decoration: none">
             🎱 2021 Predictions
           </a>
         </h1>
         <p style="float: right; display: inline-block">
-          <a role="button" href="#" id="disco-mode-button" style="color: white; text-decoration: none">
+          <a role="button" href="#" id="disco-mode-button" class="nav-link">
             <span id="disco-mode-verb">Activate</span> disco mode
           </a>
+        </p>
+        <p style="float: right; display: inline-block; margin-right: 15px">
+          <a href="{% url 'guidelines' %}" class="nav-link">Guidelines</a>
         </p>
       </div>
     </header>
