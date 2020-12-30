@@ -10,15 +10,6 @@ import Chat from "../components/chat"
 class IndexPage extends React.Component {
   constructor(props) {
     super(props)
-    // Only open websocket connections if the game is active
-    if (this.isActive()) {
-      const socketProtocol = window.location.protocol.startsWith('https') ? 'wss' : 'ws'
-      this.sockets = {
-        cursor: new WebSocket(`${socketProtocol}://${window.location.host}/ws/cursor/`),
-        chat: new WebSocket(`${socketProtocol}://${window.location.host}/ws/chat/`),
-        predictions: new WebSocket(`${socketProtocol}://${window.location.host}/ws/predictions/`)
-      }
-    }
     this.userMap = props.userMap  // Map of cursor info indexed by user ID
     this.state = {
       currText: '',  // Current prediction text (controlled by the form input)
@@ -28,38 +19,66 @@ class IndexPage extends React.Component {
     }
   }
 
+  componentDidMount = () => {
+    // Only open websocket connections if the game is active
+    this.sockets = {}
+    if (this.isActive()) {
+      this.connect('cursor', '/ws/cursor/', this.onCursorMessage),
+      this.connect('chat', '/ws/chat/', this.onChatMessage),
+      this.connect('predictions', '/ws/predictions/', this.onPredictionMessage)
+      // Only start tracking the cursor if the user has the correct permissions
+      if (this.userHasPermissions()) {
+        this.initializeCursorTracker()
+      }
+    }
+  }
+
   isActive = () => {
     // Whether or not the predictions game is active
     return (this.props.isActive ? true : false)
   }
 
   userHasPermissions = () => {
-    // Whether or not the current user has permissions to had predictions
+    // Whether or not the current user has permissions to add predictions
     return (this.props.userHasPermissions ? true : false)
   }
 
-  componentDidMount = () => {
-    if (this.isActive()) {
-      this.initializeCursorSocket()
-      this.initializeChatSocket()
-      this.initializePredictionSocket()
+  connect = (key, url, onMessage) => {
+    // Connect a websocket to a URL with a message callback function onMessage,
+    // saving it to the given key on the `sockets` attr on this class
+    const socketProtocol = window.location.protocol.startsWith('https') ? 'wss' : 'ws'
+    let socket = new WebSocket(`${socketProtocol}://${window.location.host}${url}`)
+    socket.onopen = () => {
+      console.log(`${url} socket connected`)
     }
+    socket.onmessage = onMessage
+    socket.onclose = () => {
+      if (!this.shownConnectionError) {
+        alert(
+          `The ${key} websocket closed unexpectedly. This means you won't ` +
+          `see live ${key} updates from other users until the websocket reconnects. ` +
+          `Your browser will attempt to reconnect every 5 seconds, but you can ` +
+          `also manually reconnect by refreshing the page. Contact Jean if this ` +
+          `error persists even after a refresh.`
+        )
+        this.shownConnectionError = true
+      }
+      console.error(`${url} socket closed, reconnecting in 5 seconds`)
+      setTimeout(() => {this.connect(key, url, onMessage)}, 5000)
+    }
+    socket.onerror = (err) => {
+      console.error(
+        `${url} socket encountered an error: ${err.message}\n`,
+        'Closing socket and attempting to reopen it.'
+      )
+      socket.close()
+    }
+    this.sockets[key] = socket
   }
 
-  initializeCursorSocket = () => {
-    this.sockets.cursor.onopen = () => {
-      console.log('Cursor socket connected')
-    }
-    this.sockets.cursor.onmessage = (message) => {
-      const data = JSON.parse(message.data)
-      this.updateCursor(data.userId, data.x, data.y)
-    }
-    this.sockets.cursor.onclose = () => {
-      console.error('Cursor socket close unexpectedly')
-    }
-    if (this.userHasPermissions()) {
-      this.initializeCursorTracker()
-    }
+  onCursorMessage = (message) => {
+    const data = JSON.parse(message.data)
+    this.updateCursor(data.userId, data.x, data.y)
   }
 
   updateCursor = (userId, x, y) => {
@@ -70,39 +89,9 @@ class IndexPage extends React.Component {
     })
   }
 
-  initializeCursorTracker = () => {
-    // Track the current position of the mouse
-    let prevCursorX, prevCursorY, currCursorX, currCursorY
-    document.onmousemove = (e) => {
-      const event = e || window.event
-      currCursorX = event.pageX
-      currCursorY = event.pageY
-    }
-    // Send cursor position to the socket every 500 ms if the cursor has moved
-    window.setInterval(() => {
-      if (prevCursorX !== currCursorX || prevCursorY !== currCursorY) {
-        prevCursorX = currCursorX
-        prevCursorY = currCursorY
-        this.sockets.cursor.send(JSON.stringify({
-          'type': 'cursor',
-          'x': currCursorX,
-          'y': currCursorY
-        }))
-      }
-    }, 100)
-  }
-
-  initializeChatSocket = () => {
-    this.sockets.chat.onopen = () => {
-      console.log('Chat socket connected')
-    }
-    this.sockets.chat.onmessage = (message) => {
-      const data = JSON.parse(message.data)
-      this.updateChat(data.userId, data.messageId, data.text, data.created)
-    }
-    this.sockets.chat.onclose = () => {
-      console.error('Chat socket closed unexpectedly')
-    }
+  onChatMessage = (message) => {
+    const data = JSON.parse(message.data)
+    this.updateChat(data.userId, data.messageId, data.text, data.created)
   }
 
   updateChat = (userId, messageId, text, created) => {
@@ -119,31 +108,23 @@ class IndexPage extends React.Component {
     })
   }
 
-  initializePredictionSocket = () => {
-    this.sockets.predictions.onopen = () => {
-      console.log('Predictions socket connected')
-    }
-    this.sockets.predictions.onmessage = (message) => {
-      const data = JSON.parse(message.data)
-      switch (data.type) {
-        case 'create':
-          this.addPrediction(data.id, data.text, data.userId, data.color, data.positionX, data.positionY)
-          break
-        case 'update':
-          this.updatePrediction(data.id, data.positionX, data.positionY)
-          break
-        case 'delete':
-          this.removePrediction(data.id)
-          break
-        case 'error':
-          alert(data.text)
-          break
-        default:
-          console.log(`Unrecognized message type: ${data.type}`)
-      }
-    }
-    this.sockets.predictions.onclose = () => {
-      console.error('Predictions socket closed unexpectedly')
+  onPredictionMessage = (message) => {
+    const data = JSON.parse(message.data)
+    switch (data.type) {
+      case 'create':
+        this.addPrediction(data.id, data.text, data.userId, data.color, data.positionX, data.positionY)
+        break
+      case 'update':
+        this.updatePrediction(data.id, data.positionX, data.positionY)
+        break
+      case 'delete':
+        this.removePrediction(data.id)
+        break
+      case 'error':
+        alert(data.text)
+        break
+      default:
+        console.error(`Unrecognized message type: ${data.type}`)
     }
   }
 
@@ -181,6 +162,28 @@ class IndexPage extends React.Component {
         predictions: state.predictions.filter(prediction => prediction.id !== predictionId)
       }
     })
+  }
+
+  initializeCursorTracker = () => {
+    // Track the current position of the mouse
+    let prevCursorX, prevCursorY, currCursorX, currCursorY
+    document.onmousemove = (e) => {
+      const event = e || window.event
+      currCursorX = event.pageX
+      currCursorY = event.pageY
+    }
+    // Send cursor position to the socket every 500 ms if the cursor has moved
+    window.setInterval(() => {
+      if (prevCursorX !== currCursorX || prevCursorY !== currCursorY) {
+        prevCursorX = currCursorX
+        prevCursorY = currCursorY
+        this.sockets.cursor.send(JSON.stringify({
+          'type': 'cursor',
+          'x': currCursorX,
+          'y': currCursorY
+        }))
+      }
+    }, 100)
   }
 
   handleChange = (e) => {
