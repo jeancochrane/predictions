@@ -36,7 +36,7 @@ const Chat = ({ messages, userMap, isActive, userHasPermissions, handleSendChat 
         }
         {messages.length > 0 ?
           messages.map(message => (
-            <span>
+            <span key={message.id}>
               <span
                 style={{
                   backgroundColor: userMap[message.userId].color || 'inherit',
