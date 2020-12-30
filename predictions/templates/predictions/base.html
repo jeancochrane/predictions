@@ -69,7 +69,7 @@
 
     @media (max-width: 960px) {
       .nav-wrapper {
-        max-width: 650px;
+        max-width: 750px;
       }
     }
 
@@ -77,6 +77,15 @@
       color: white;
       text-decoration: none;
       padding: 20px;
+    }
+
+    .nav-link-wrapper {
+      float: right;
+      display: inline-block;
+    }
+
+    .nav-link-wrapper:not(:first-child) {
+      margin-right: 5px;
     }
   </style>
   </head>
@@ -94,12 +103,19 @@
             🎱 2021 Predictions
           </a>
         </h1>
-        <p style="float: right; display: inline-block">
+        <p class="nav-link-wrapper">
+          {% if request.user.is_authenticated %}
+            <a href="{% url 'logout' %}" class="nav-link">Logout</a>
+          {% else %}
+            <a href="{% url 'login' %}" class="nav-link">Login</a>
+          {% endif %}
+        </p>
+        <p class="nav-link-wrapper">
           <a role="button" href="#" id="disco-mode-button" class="nav-link">
             <span id="disco-mode-verb">Activate</span> disco mode
           </a>
         </p>
-        <p style="float: right; display: inline-block; margin-right: 5px">
+        <p class="nav-link-wrapper">
           <a href="{% url 'guidelines' %}" class="nav-link">Guidelines</a>
         </p>
       </div>

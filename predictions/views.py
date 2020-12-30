@@ -18,7 +18,7 @@ class Home(TemplateView):
             'predictions': [prediction.as_dict() for prediction in predictions],
             'messages': [message.as_dict() for message in messages],
             'userId': self.request.user.id,
-            'loginUrl': f'{reverse("admin:login")}?next={reverse("home")}',
+            'loginUrl': reverse("login"),
             'isActive': game_is_active,
             'userHasPermissions': models.user_can_manage_predictions(
                 self.request.user
