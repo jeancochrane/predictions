@@ -10,7 +10,7 @@ from predictions import models
 class BaseConsumer(WebsocketConsumer):
 
     def connect(self):
-        if settings.PREDICTIONS_ACTIVE:
+        if settings.GAME_IS_ACTIVE():
             self.is_connected = True
             self.user = self.scope['user']
             self.group_name = self.get_group_name()

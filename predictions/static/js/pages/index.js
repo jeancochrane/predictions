@@ -262,7 +262,7 @@ class IndexPage extends React.Component {
               <p><a href={this.props.loginUrl}>Log in</a> to start adding predictions.</p>
             )
             :
-            <p>This predictions game is currently archived.</p>
+            <p>{this.props.dateMessage}</p>
           }
         </div>
         <div

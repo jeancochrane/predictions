@@ -10,9 +10,11 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 import os
+from datetime import datetime
 
 import dj_database_url
 from django.templatetags.static import static
+import pytz
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -122,6 +124,8 @@ LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'UTC'
 
+DISPLAY_TIME_ZONE = 'America/Chicago'
+
 USE_I18N = True
 
 USE_L10N = True
@@ -178,5 +182,57 @@ CHANNEL_LAYERS = {
     }
 }
 
-# Whether or not the game is active
-PREDICTIONS_ACTIVE = False if os.getenv('PREDICTIONS_ACTIVE', True) == 'False' else True
+# Start and end datetimes for the game
+# must be in the format %m/%d/%y %H:%M:%S
+# e.g. "09/19/18 13:55:26"
+START_DATETIME = os.getenv('START_DATETIME')
+END_DATETIME = os.getenv('END_DATETIME')
+
+
+def parse_datetime(dt):
+    DATE_FORMAT = '%m/%d/%y %H:%M:%S'
+    try:
+        return datetime.strptime(dt, DATE_FORMAT)
+    except ValueError:
+        raise ValueError(
+            f'Datetimes must be in the format {DATE_FORMAT}'
+        )
+
+
+def GAME_IS_ACTIVE():
+    if START_DATETIME and END_DATETIME:
+        start_datetime = parse_datetime(START_DATETIME)
+        end_datetime = parse_datetime(END_DATETIME)
+        now = datetime.now()
+        return now >= start_datetime and now <= end_datetime
+    elif START_DATETIME or END_DATETIME:
+        raise ValueError(
+            'Both START_DATETIME and END_DATETIME must be set if at least one is set'
+        )
+    else:
+        return True
+
+
+def display_datetime(dt):
+    return dt.astimezone(pytz.timezone(DISPLAY_TIME_ZONE)).strftime('%m/%d/%y %-I:%M %p')
+
+
+def GET_DATE_MESSAGE():
+    if GAME_IS_ACTIVE():
+        raise ValueError(
+            'get_date_message() can only be called when game is not active'
+        )
+
+    now = datetime.now()
+    start_datetime = parse_datetime(START_DATETIME)
+    if now < start_datetime:
+        return f'This game will start on {display_datetime(start_datetime)} CST'
+    else:
+        end_datetime = parse_datetime(END_DATETIME)
+        if now > end_datetime:
+            return f'This game was archived on {display_datetime(end_datetime)} CST'
+        else:
+            # This shouldn't happen, but raise a verbose error in case
+            raise ValueError(
+                'Game is not active, but time appears to be between start and end dates'
+            )

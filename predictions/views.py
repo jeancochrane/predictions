@@ -13,17 +13,20 @@ class Home(TemplateView):
         context = super().get_context_data(*args, **kwargs)
         predictions = models.Prediction.objects.all()
         messages = models.ChatMessage.objects.all()
+        game_is_active = settings.GAME_IS_ACTIVE()
         context['props'] = {
             'predictions': [prediction.as_dict() for prediction in predictions],
             'messages': [message.as_dict() for message in messages],
             'userId': self.request.user.id,
             'loginUrl': f'{reverse("admin:login")}?next={reverse("home")}',
-            'isActive': settings.PREDICTIONS_ACTIVE,
+            'isActive': game_is_active,
             'userHasPermissions': models.user_can_manage_predictions(
                 self.request.user
             ),
             'userMap': models.get_user_info()
         }
+        if not game_is_active:
+            context['props']['dateMessage'] = settings.GET_DATE_MESSAGE()
         return context
 
 
