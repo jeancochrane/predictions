@@ -94,14 +94,14 @@ class IndexPage extends React.Component {
     this.updateChat(data.userId, data.messageId, data.text, data.created)
   }
 
-  updateChat = (userId, messageId, text, created) => {
+  updateChat = (userId, id, text, created) => {
     const username = this.userMap[userId].username
     this.setState(state => {
       // Prepend new message to array of existing messages, since messages are
       // reversed in the Chat component
       return {
         ...state,
-        messages: [{userId, username, messageId, text, created}].concat(
+        messages: [{userId, username, id, text, created}].concat(
           state.messages
         )
       }
