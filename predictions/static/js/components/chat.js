@@ -13,6 +13,7 @@ const Chat = ({ messages, userMap, isActive, userHasPermissions, handleSendChat 
       <div
         style={{
           maxHeight: expanded ? 400 : 0,
+          maxWidth: 400,
           overflow: "auto",
           display: "flex",
           flexDirection: "column-reverse",
