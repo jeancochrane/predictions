@@ -73,7 +73,7 @@ class ChatMessage(models.Model):
             'created': self.get_created()
         }
 
-    def get_created(self, timezone=settings.DISPLAY_TIME_ZONE, timefmt='%b %-m, %-I:%M %p'):
+    def get_created(self, timezone=settings.DISPLAY_TIME_ZONE, timefmt='%b %-d, %-I:%M %p'):
         """Get the `created` attr, formatted according to timefmt string"""
         return self.created.astimezone(pytz.timezone(timezone)).strftime(timefmt)
 

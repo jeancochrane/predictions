@@ -1,7 +1,7 @@
 import React, { useState } from "react"
 
 const Chat = ({ messages, userMap, isActive, userHasPermissions, handleSendChat }) => {
-  const [expanded, setExpanded] = useState(false)
+  const [expanded, setExpanded] = useState(true)
   const [currMessage, setCurrMessage] = useState('')
   const handleSubmit = (e) => {
     e.preventDefault()
