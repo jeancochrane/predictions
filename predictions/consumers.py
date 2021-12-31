@@ -80,6 +80,20 @@ class PredictionConsumer(BaseConsumer):
             self.send_error('text is required when creating predictions')
 
         prediction = models.Prediction.objects.create(user=self.user, text=text)
+
+        # Optionally adjust default position if the client has sent position
+        # values
+        if text_data_json.get('scrollLeft'):
+            prediction.position_x = models.get_random_position(
+                text_data_json['scrollLeft'],
+                text_data_json.get('innerWidth')
+            )
+        if text_data_json.get('scrollTop'):
+            prediction.position_y = models.get_random_position(
+                text_data_json['scrollTop'],
+                text_data_json.get('innerHeight')
+            )
+
         async_to_sync(self.channel_layer.group_send)(
            self.group_name,
            {

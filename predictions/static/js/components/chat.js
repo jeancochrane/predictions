@@ -38,21 +38,28 @@ const Chat = ({ messages, userMap, isActive, userHasPermissions, handleSendChat 
         {messages.length > 0 ?
           messages.map(message => (
             <span key={message.id}>
-              <span
-                style={{
-                  backgroundColor: userMap[message.userId].color || 'inherit',
-                  height: 10,
-                  width: 10,
-                  borderRadius: 5,
-                  display: 'inline-block'
-                }}
-              ></span>&nbsp;
-              <strong>{message.username}</strong>&nbsp;
-              <span style={{color: "grey"}}>
-                {message.created}
+              <span style={{
+                backgroundColor: (message.type === "notification") ? "#eaeaea" : "inherit",
+                display: (message.type === "notification") ? "block" : "unset",
+              }}>
+                <span
+                  style={{
+                    backgroundColor: userMap[message.userId].color || 'inherit',
+                    height: 10,
+                    width: 10,
+                    borderRadius: 5,
+                    display: 'inline-block'
+                  }}
+                ></span>&nbsp;
+                <strong>{message.username}</strong>&nbsp;
+                <span style={{color: "grey"}}>
+                  {message.created}
+                </span>
+                <br/>
+                <span style={{fontStyle: (message.type === "notification") ? "italic" : "inherit"}}>
+                  {message.text}
+                </span>
               </span>
-              <br/>
-              {message.text}
               <hr/>
             </span>
           ))

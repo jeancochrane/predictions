@@ -7,14 +7,21 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 
 
+def get_random_position(min_coord, width=None):
+    """Get a random coordinate value based on the user's position and
+    optionally their viewport."""
+    width = width or 5000
+    return random.randint(min_coord, min_coord + width)
+
+
 def random_x():
     """Return a random x-coordinate for use in default field values."""
-    return random.randint(0, 1200)
+    return get_random_position(0, 1200)
 
 
 def random_y():
     """Return a random y-coordinate for use in default field values."""
-    return random.randint(0, 500)
+    return get_random_position(0, 500)
 
 
 def random_color():

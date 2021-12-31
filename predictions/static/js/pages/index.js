@@ -91,17 +91,17 @@ class IndexPage extends React.Component {
 
   onChatMessage = (message) => {
     const data = JSON.parse(message.data)
-    this.updateChat(data.userId, data.messageId, data.text, data.created)
+    this.updateChat(data.userId, data.messageId, data.text, data.created, "post")
   }
 
-  updateChat = (userId, id, text, created) => {
+  updateChat = (userId, id, text, created, type) => {
     const username = this.userMap[userId].username
     this.setState(state => {
       // Prepend new message to array of existing messages, since messages are
       // reversed in the Chat component
       return {
         ...state,
-        messages: [{userId, username, id, text, created}].concat(
+        messages: [{userId, username, id, text, created, type}].concat(
           state.messages
         )
       }
@@ -113,6 +113,9 @@ class IndexPage extends React.Component {
     switch (data.type) {
       case 'create':
         this.addPrediction(data.id, data.text, data.userId, data.color, data.positionX, data.positionY)
+        // Add a notification to the chat
+        const chatText = `New prediction: "${data.text}"`
+        this.updateChat(data.userId, data.id, chatText, null, "notification")
         break
       case 'update':
         this.updatePrediction(data.id, data.positionX, data.positionY)
@@ -194,7 +197,18 @@ class IndexPage extends React.Component {
     // Send a message to the socket to create a new prediction
     e.preventDefault()
     if (this.isActive() && this.userHasPermissions()) {
-      this.sockets.predictions.send(JSON.stringify({type: 'create', text: this.state.currText}))
+      this.sockets.predictions.send(
+        JSON.stringify(
+          {
+            type: 'create',
+            text: this.state.currText,
+            scrollTop: document.documentElement.scrollTop,
+            scrollLeft: document.documentElement.scrollLeft,
+            innerHeight: window.innerHeight,
+            innerWidth: window.innerWidth
+          }
+        )
+      )
       // Clear the textarea
       this.setState({currText: ''})
     }
