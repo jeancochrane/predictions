@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 import os
+import ssl
 from datetime import datetime
 
 import dj_database_url
@@ -165,23 +166,30 @@ COMPRESS_OFFLINE = not DEBUG
 # Make sure Django compressor can generate static paths
 COMPRESSOR_OFFLINE_CONTEXT = {'static': static}
 
+# Configure redis
+redis_host = {
+    'address': os.getenv(
+        'REDIS_URL',
+        'redis://redis:6379'
+    )
+}
+
 # Enforce SSL in production
 if DEBUG is False:
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SECURE_SSL_REDIRECT = True
 
+    # Temporary fix for Heroku Redis SSL context
+    # (See: https://stackoverflow.com/a/70522571)
+    ssl_context = ssl.SSLContext()
+    ssl_context.check_hostname = False
+    redis_host["ssl"] = ssl_context
+
 # Channels config
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
-        'CONFIG': {
-            'hosts': [
-                os.getenv(
-                    'REDIS_URL',
-                    'redis://redis:6379'
-                ),
-            ]
-        }
+        'CONFIG': {'hosts': [redis_host]}
     }
 }
 
