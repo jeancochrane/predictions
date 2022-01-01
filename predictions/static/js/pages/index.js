@@ -6,6 +6,16 @@ import Cursor from "../components/cursor"
 import Map from "../components/map"
 import Chat from "../components/chat"
 
+const getRandomId = (length) => {
+    var result = '';
+    var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    var charactersLength = characters.length;
+    for ( var i = 0; i < length; i++ ) {
+      result += characters.charAt(Math.floor(Math.random() * charactersLength));
+   }
+   return result;
+}
+
 
 class IndexPage extends React.Component {
   constructor(props) {
@@ -115,7 +125,8 @@ class IndexPage extends React.Component {
         this.addPrediction(data.id, data.text, data.userId, data.color, data.positionX, data.positionY)
         // Add a notification to the chat
         const chatText = `New prediction: "${data.text}"`
-        this.updateChat(data.userId, data.id, chatText, null, "notification")
+        const chatId = getRandomId(25)
+        this.updateChat(data.userId, chatId, chatText, null, "notification")
         break
       case 'update':
         this.updatePrediction(data.id, data.positionX, data.positionY)
